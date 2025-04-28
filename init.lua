@@ -377,6 +377,9 @@ require('lazy').setup({
 
       local capabilities = vim.lsp.protocol.make_client_capabilities()
       capabilities = vim.tbl_deep_extend('force', capabilities, require('cmp_nvim_lsp').default_capabilities())
+      require('lspconfig').pyright.setup {
+        capabilities = capabilities,
+      }
 
       --  Add any additional override configuration in the following tables. Available keys are:
       --  - cmd (table): Override the default command used to start the server
@@ -387,7 +390,7 @@ require('lazy').setup({
       local servers = {
         clangd = {},
         -- gopls = {},
-        -- pyright = {},
+        pyright = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -425,6 +428,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'pyright',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -641,7 +645,25 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+        'python',
+        'toml',
+        'rst',
+        'ninja',
+        'markdown',
+        'markdown_inline',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -707,6 +729,7 @@ vim.api.nvim_set_keymap('i', 'jk', '<Esc>', { noremap = true })
 -- Prevent yanking on delete
 vim.api.nvim_set_keymap('n', 'd', '"_d', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'dd', '"_dd', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>mm', 'dd', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'D', '"_D', { noremap = true, silent = true })
 
 -- Prevent yanking on change
@@ -720,4 +743,7 @@ vim.api.nvim_set_keymap('x', 'p', '"_dP', { noremap = true, silent = true })
 
 -- Prevent yanking on 'x' (cut)
 vim.api.nvim_set_keymap('n', 'x', '"_x', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('x', 'c', '"_c', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('x', 'x', '"_x', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('x', '<leader>m', 'x', { noremap = true, silent = true })
+vim.keymap.set('n', 'gl', '<cmd>lua vim.diagnostic.open_float()<cr>')
