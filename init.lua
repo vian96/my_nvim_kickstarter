@@ -100,7 +100,12 @@ vim.opt.rtp:prepend(lazypath)
 --  To update plugins you can run
 --    :Lazy update
 require('lazy').setup({
-  'Mofiqul/vscode.nvim',
+  {
+    'Mofiqul/vscode.nvim',
+    opts = {
+      style = 'dark',
+    },
+  },
   'tpope/vim-sleuth', -- Detect tabstop and shiftwidth automatically
 
   -- Use `opts = {}` to force a plugin to be loaded.
@@ -380,6 +385,19 @@ require('lazy').setup({
       require('lspconfig').pyright.setup {
         capabilities = capabilities,
       }
+      require('lspconfig').verible.setup {
+        cmd = { 'verible-verilog-ls', '--rules_config_search' }, -- Example command with a flag
+        filetypes = { 'systemverilog', 'verilog' }, -- Explicitly list filetypes
+        -- Add other configurations as needed
+      }
+      require('lspconfig').ruff.setup {
+        init_options = {
+          settings = {
+            -- Any extra ruff settings go here
+            args = {},
+          },
+        },
+      }
 
       --  Add any additional override configuration in the following tables. Available keys are:
       --  - cmd (table): Override the default command used to start the server
@@ -391,6 +409,7 @@ require('lazy').setup({
         clangd = {},
         -- gopls = {},
         pyright = {},
+        verible = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -481,6 +500,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        python = { 'ruff_format' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -664,6 +684,7 @@ require('lazy').setup({
         'markdown',
         'markdown_inline',
       },
+      ignore_install = { 'systemverilog' },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -730,12 +751,15 @@ vim.api.nvim_set_keymap('i', 'jk', '<Esc>', { noremap = true })
 vim.api.nvim_set_keymap('n', 'd', '"_d', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'dd', '"_dd', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', '<leader>mm', 'dd', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>M', 'D', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'D', '"_D', { noremap = true, silent = true })
 
 -- Prevent yanking on change
 vim.api.nvim_set_keymap('n', 'c', '"_c', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'cc', '"_cc', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('n', 'C', '"_C', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 's', '"_s', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', 'S', '"_S', { noremap = true, silent = true })
 
 -- Prevent yanking on paste in visual mode
 vim.api.nvim_set_keymap('x', 'p', '"_dP', { noremap = true, silent = true })
@@ -747,3 +771,43 @@ vim.api.nvim_set_keymap('x', 'c', '"_c', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('x', 'x', '"_x', { noremap = true, silent = true })
 vim.api.nvim_set_keymap('x', '<leader>m', 'x', { noremap = true, silent = true })
 vim.keymap.set('n', 'gl', '<cmd>lua vim.diagnostic.open_float()<cr>')
+
+vim.api.nvim_set_keymap('n', '<leader>o', '<cmd>ClangdSwitchSourceHeader<CR>', { noremap = true, silent = true })
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = { 'c', 'cpp' },
+  callback = function()
+    vim.opt_local.tabstop = 4
+    vim.opt_local.shiftwidth = 4
+    vim.opt.softtabstop = 4
+    vim.opt.autoindent = true
+    vim.opt.smartindent = true
+    vim.opt_local.expandtab = true -- Use spaces instead of tabs
+  end,
+})
+
+-- require('lspconfig').clangd.setup {
+--   cmd = {
+--     'clangd-21', -- Your available clangd
+--     '--query-driver=/mnt/e/WindowsFolders/Desktop/wsl/paramanifest/external/dist/bin/clang-22', -- Your custom compiler
+--     '--background-index',
+--     '--experimental-modules-support',
+--   },
+-- }
+
+require('lspconfig').clangd.setup {
+  cmd = {
+    'clangd-21',
+    '--background-index',
+    '--clang-tidy',
+    -- '--query-driver=/mnt/e/WindowsFolders/Desktop/wsl/paramanifest/external/dist/bin/clang++',
+    -- '--experimental-modules-support',
+    '--all-scopes-completion',
+    '--completion-style=detailed',
+    '--header-insertion=never',
+  },
+  -- Force clangd to look in the build directory
+  init_options = {
+    compilationDatabasePath = 'build',
+  },
+}
